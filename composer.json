@@ -1,0 +1,39 @@
+{
+    "name": "gilsegura/psr-server",
+    "description": "This is a project providing infrastructure for creating PSR HTTP server.",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.3",
+        "gilsegura/assert": "dev-main",
+        "gilsegura/serializer": "dev-main",
+        "php-http/discovery": "^1.20",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^2.0",
+        "psr/http-server-middleware": "^1.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3",
+        "nyholm/psr7": "^1.8",
+        "phpstan/phpstan": "^1",
+        "phpunit/phpunit": "^11",
+        "rector/rector": "^1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Psr\\Server\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Psr\\Server\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": true
+    }
+}
