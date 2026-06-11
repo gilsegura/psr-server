@@ -14,16 +14,11 @@ use Psr\Http\Server\RequestHandlerInterface;
 final readonly class RequestHandler implements RequestHandlerInterface
 {
     /**
-     * @var \Closure(ServerRequestInterface): TResponse
-     */
-    private \Closure $handler;
-
-    /**
      * @param \Closure(ServerRequestInterface): TResponse $handler
      */
-    public function __construct(\Closure $handler)
-    {
-        $this->handler = $handler;
+    public function __construct(
+        private \Closure $handler,
+    ) {
     }
 
     /**
