@@ -8,26 +8,46 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Server\RequestHandler;
 
+/**
+ * @template TRequest of ServerRequestInterface
+ */
 final readonly class MiddlewareRunner
 {
-    /** @var MiddlewareInterface[] */
+    /**
+     * @var MiddlewareInterface[]
+     */
     private array $middlewares;
 
-    public function __construct(
-        MiddlewareInterface ...$middlewares,
-    ) {
+    public function __construct(MiddlewareInterface ...$middlewares)
+    {
         $this->middlewares = $middlewares;
     }
 
-    public function __invoke(ServerRequestInterface $serverRequest, RequestHandlerInterface $handler): ResponseInterface
+    /**
+     * @template TResponse of ResponseInterface
+     *
+     * @param TRequest                  $request
+     * @param RequestHandler<TResponse> $handler
+     *
+     * @return TResponse
+     */
+    public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $processor = array_reduce(
+        $pipeline = array_reduce(
             array_reverse($this->middlewares),
-            static fn (\Closure $stack, MiddlewareInterface $middleware): \Closure => static fn (ServerRequestInterface $request): ResponseInterface => $middleware->process($request, new StackMiddleware($stack)),
-            static fn (ServerRequestInterface $request): ResponseInterface => $handler->handle($request),
+            static function (callable $next, MiddlewareInterface $middleware): callable {
+                return static function (ServerRequestInterface $request) use ($middleware, $next): ResponseInterface {
+                    return $middleware->process($request, new StackMiddleware($next));
+                };
+            },
+            static fn (ServerRequestInterface $request): ResponseInterface => $handler->handle($request)
         );
 
-        return call_user_func($processor, $serverRequest);
+        /** @var TResponse $response */
+        $response = $pipeline($request);
+
+        return $response;
     }
 }

@@ -7,31 +7,31 @@ namespace Psr\Server;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Server\Middleware\MiddlewareRunner;
 
+/**
+ * @template TResponse of ResponseInterface
+ */
 final readonly class RequestHandler implements RequestHandlerInterface
 {
-    public function __construct(
-        private MiddlewareRunner $runner,
-        private \Closure $handler,
-    ) {
-    }
+    /**
+     * @var \Closure(ServerRequestInterface): TResponse
+     */
+    private \Closure $handler;
 
-    public static function callable(
-        MiddlewareRunner $runner,
-        callable $callable,
-    ): self {
-        return new self($runner, \Closure::fromCallable($callable));
-    }
-
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    /**
+     * @param \Closure(ServerRequestInterface): TResponse $handler
+     */
+    public function __construct(\Closure $handler)
     {
-        return $this->runner->__invoke($request, $this);
+        $this->handler = $handler;
     }
 
+    /**
+     * @return TResponse
+     */
     #[\Override]
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return call_user_func($this->handler, $request);
+        return ($this->handler)($request);
     }
 }

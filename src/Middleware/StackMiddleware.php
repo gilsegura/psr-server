@@ -8,16 +8,22 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * @template TRequest of ServerRequestInterface
+ * @template TResponse of ResponseInterface
+ */
 final readonly class StackMiddleware implements RequestHandlerInterface
 {
+    /**
+     * @param \Closure(ServerRequestInterface): ResponseInterface $next
+     */
     public function __construct(
-        private \Closure $stack,
+        private \Closure $next,
     ) {
     }
 
-    #[\Override]
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return call_user_func($this->stack, $request);
+        return ($this->next)($request);
     }
 }
