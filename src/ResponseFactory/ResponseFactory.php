@@ -9,9 +9,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Serializer\SerializableInterface;
 
-/**
- * @template TBody of SerializableInterface|null
- */
 final readonly class ResponseFactory
 {
     public function __construct(
@@ -21,14 +18,14 @@ final readonly class ResponseFactory
     }
 
     /**
-     * @param Header[] $headers
-     * @param TBody    $body
+     * @template TAttributes of array
+     *
+     * @param SerializableInterface<TAttributes>|null $body
      *
      * @throws \Throwable
      */
     public function __invoke(
         Status $status,
-        array $headers = [],
         ?SerializableInterface $body = null,
     ): ResponseInterface {
         $response = $this->responseFactory
@@ -43,13 +40,6 @@ final readonly class ResponseFactory
 
             $response = $response->withBody(
                 $this->streamFactory->createStream($json)
-            );
-        }
-
-        foreach ($headers as $header) {
-            $response = $response->withHeader(
-                $header->name,
-                $header->value
             );
         }
 
